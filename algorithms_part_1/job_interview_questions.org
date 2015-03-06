@@ -1,0 +1,234 @@
+* Hash
+** Question 1
+4-SUM. Given an array a[] of N integers, the 4-SUM problem is to
+determine if there exist distinct indices i, j, k, and l such that
+a[i]+a[j]=a[k]+a[l]. Design an algorithm for the 4-SUM problem that
+takes time proportional to N^2 (under suitable technical assumptions).
+
+#+begin_src python
+  def no_common(p1, p2):
+      return p1[0] != p2[0] and p1[0] != p2[1] and p1[1] != p2[0] and p1[1] != p2[1]
+
+
+  from random import randint
+
+  nums = [randint(0, 50) for _ in range(20)]
+
+  cache = {}
+  for i in range(len(nums)):
+      for j in range(i + 1, len(nums)):
+          sum = nums[i] + nums[j]
+          cache.setdefault(sum, [])
+          cache[sum].append((i, j))
+
+  for pairs in cache.values():
+      # TODO: notice compare at most 3 pairs, or the 4th pair will lead to a found
+      for i in range(len(pairs)):
+          for j in range(i + 1, len(pairs)):
+              if no_common(pairs[i], pairs[j]):
+                  print(nums[pairs[i][0]], nums[pairs[i][1]], end='|')
+                  print(nums[pairs[j][0]], nums[pairs[j][1]])
+
+
+  print(nums)
+#+end_src
+
+** Question 2
+Hashing with wrong hashCode() or equals(). Suppose that you implement
+a data type OlympicAthlete for use in a java.util.HashMap.
+
+Describe what happens if you override hashCode() but not equals().
+
+Describe what happens if you override equals() but not hashCode().
+
+Describe what happens if you override hashCode() but implement public
+boolean equals(OlympicAthlete that) instead of public boolean
+equals(Object that).
+* Balanced Search Tree
+** Question 1
+Red-black BST with no extra memory. Describe how to save the memory
+for storing the color information when implementing a red-black BST.
+
+** TODO: Question 2: reverse index?
+Document search. Design an algorithm that takes a sequence of N
+document words and a sequence of M query words and find the shortest
+interval in which the M query words appear in the document in the
+order given. The length of an interval is the number of words in that
+interval.
+
+** Question 3
+Generalized queue. Design a generalized queue data type that supports
+all of the following operations in logarithmic time (or better) in the
+worst case.
+
+    Create an empty data structure.
+
+    Append an item to the end of the queue.
+
+    Remove an item from the front of the queue.
+
+    Return the ith item in the queue.
+
+    Remove the ith item from the queue.
+* Elementary Symbol Tables
+** Question 1
+Java autoboxing and equals(). Consider two double values a and b and
+their corresponding Double values x and y.
+
+Find values such that (a == b) is true but x.equals(y) is false.
+Find values such that (a == b) is false but x.equals(y) is true.
+
+** Question 2
+Check if a binary tree is a BST.
+
+Given a binary tree where each Node contains a key, determine whether
+it is a binary search tree. Use extra space proportional to the height
+of the tree.
+
+** Question 3
+Inorder traversal with constant extra space.
+
+Design an algorithm to perform an inorder traversal of a binary search
+tree using only a constant amount of extra space.
+
+** Question 4: maintain a symbol table of symbol tables
+Web tracking.
+
+Suppose that you are tracking N web sites and M users and you want to
+support the following API:
+
+- User visits a website.
+- How many times has a given user visited a given site?
+
+What data structure or data structures would you use?
+* Priority Queues
+** Question 1
+Dynamic median.
+
+Design a data type that supports insert in logarithmic time,
+find-the-median in constant time, and remove-the-median in logarithmic
+time.
+
+** Question 2
+Randomized priority queue.
+
+Describe how to add the methods sample() and delRandom() to our binary
+heap implementation. The two methods return a key that is chosen
+uniformly at random among the remaining keys, with the latter method
+also removing that key. The sample() method should take constant time;
+the delRandom() method should take logarithmic time. Do not worry
+about resizing the underlying array.
+
+** Question 3
+Taxicab numbers.
+
+A taxicab number is an integer that can be expressed as the sum of two
+cubes of integers in two different ways: a^3+b^3=c^3+d^3. For example,
+1729=9^3+10^3=1^3+12^3. Design an algorithm to find all taxicab numbers
+with a, b, c, and d less than N.
+
+Version 1: Use time proportional to N^2logN and space proportional to N^2.
+
+Version 2: Use time proportional to N^2logN and space proportional to N.
+TODO: brilliant, use heap-sort a stream
+#+begin_src python
+  class Taxicab:
+
+      def __init__(self, i, j):
+          self.i = i
+          self.j = j
+          self.sum = i ** 3 + j ** 3
+
+      def __repr__(self):
+          return "%d, %d," % (self.i, self.j)
+
+      def __lt__(self, other):
+          return self.sum < other.sum
+
+      def __eq__(self, other):
+          return self.sum == other.sum
+
+
+  # initialization
+  N = 50
+  nums = [Taxicab(i, i) for i in range(1, N + 1)]
+
+  from heapq import heapify, heappop, heappush
+  heap = heapify(nums)
+  prev = Taxicab(0, 0) # sentinel
+  while nums:
+      current = heappop(nums)
+      # print(current)
+      if current == prev:
+          print(current, prev, end=' ')
+          print(current.sum)
+      i, j = current.i, current.j
+      if j < N:
+          heappush(nums, Taxicab(i, j + 1))
+      prev = current
+#+end_src
+* QuickSort
+** Question 1
+Nuts and bolts.
+
+A disorganized carpenter has a mixed pile of N nuts and N bolts. The
+goal is to find the corresponding pairs of nuts and bolts. Each nut
+fits exactly one bolt and each bolt fits exactly one nut. By fitting a
+nut and a bolt together, the carpenter can see which one is bigger
+(but the carpenter cannot compare two nuts or two bolts
+directly). Design an algorithm for the problem that uses NlogN
+compares (probabilistically).
+#+begin_src python
+  nuts = ['&', '@', '#', '^', '*']
+  bolts = ['@', '*', '#', '^', '&']
+
+  def match(nuts, bolts, start, end):
+      if start >= end:
+          return
+      i = partition(nuts, start, end, bolts[start])
+      j = partition(bolts, start, end, nuts[i])
+      assert i == j
+      match(nuts, bolts, start, i - 1)
+      match(nuts, bolts, i + 1, end)
+
+  def partition(arr, start, end, pivot):
+      # three way partition
+      i, j = start, end
+      k = start
+      # TODO: should go for one more round when k == j
+      while k <= j and i < j:
+          if j > k and arr[j] > pivot:
+              j -= 1
+              continue
+          if i < j and arr[i] < pivot:
+              i += 1
+              continue
+          if arr[k] > pivot:
+              arr[k], arr[j] = arr[j], arr[k]
+              j -= 1
+          if arr[k] < pivot and k > i:
+              arr[k], arr[i] = arr[i], arr[k]
+              i += 1
+          k += 1
+      return i
+
+
+  match(nuts, bolts, 0, 4)
+#+end_src
+
+** Question 2
+Selection in two sorted arrays. Given two sorted arrays a[] and b[],
+of sizes N1 and N2, respectively, design an algorithm to find the kth
+largest key. The order of growth of the worst case running time of
+your algorithm should be logN, where N=N1+N2.
+
+    Version 1: N1=N2 and k=N/2
+
+    Version 2: k=N/2
+
+    Version 3: no restrictions
+
+** Question 3
+Decimal dominants. Given an array with N keys, design an algorithm to
+find all values that occur more than N/10 times. The expected running
+time of your algorithm should be linear.
